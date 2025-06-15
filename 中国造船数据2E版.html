@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- 引入 ECharts 文件 -->
+   <script src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+   
+  <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+    <script src="world.js"></script>
+  <style>
+    body, html { height: 100%; margin: 0; }
+    .flex-container {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      margin: 20px;
+    }
+    .map-container {
+      width: 80%;
+      height: 1000px;
+      margin: 0 20px;
+    }
+    /* 环形图容器样式 */
+    .pie-charts-container {
+      width: 400px;
+      height: 1000px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 容器用于并排显示省级环形图、地图容器和嵌套环形图 -->
+  <div class="flex-container">
+    <!-- 省级环形图容器 -->
+    <div class="pie-charts-container" id="provincialPie"></div>
+    <!-- 空的地图容器（保留结构） -->
+    <div class="map-container" id="mapContainer"></div>
+    <!-- 嵌套环形图容器 -->
+    <div class="pie-charts-container" id="nestedPie"></div>
+  </div>
+
+ 
+
+  <script type="text/javascript">
+    // --------------------------- 地图部分 ---------------------------
+  var mapDom = document.getElementById('mapContainer');
+  var mapChart = echarts.init(mapDom);  
+  var name_title = "2023年各省造船总值（亿元）";
+var mapName = 'china';
+var mapdata = [
+      { name: '江苏', value: 41.4 },
+      { name: '上海', value: 15.3 },
+      { name: '浙江', value: 11.8 },
+      { name: '广东', value: 9.2 },
+      { name: '辽宁', value: 9 },
+      { name: '山东', value: 6.1 },
+      { name: '湖北', value: 1.1 },
+      { name: '福建', value: 2.8 },
+      { name: '北京', value: 0.1 },
+      { name: '安徽', value: 1.5 },
+      { name: '江西', value: 0.2 },
+      { name: '重庆', value: 0.4 },
+      { name: '广西', value: 0.6 },
+      { name: '陕西', value: 0 },
+      { name: '四川', value: 0 },
+      { name: '黑龙江', value: 0 },
+      { name: '吉林', value: 0},
+      { name: '云南', value: 0},
+      { name: '内蒙古', value: 0 },
+      { name: '山西', value: 0},
+      { name: '贵州', value: 0 },
+      { name: '新疆', value: 0 },
+      { name: '甘肃', value: 0 },
+      { name: '海南', value: 0 },
+      { name: '宁夏', value: 0 },
+      { name: '青海', value: 0 },
+      { name: '西藏', value: 0 },{ name: '河南', value: 0 },{ name: '河北', value: 0 },{ name: '湖南', value: 0 }
+        ];
+        var mapOption = {
+   title: {
+                text: name_title,
+                x: 'center',
+                textStyle: {
+                    fontSize: 24
+                },                
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: function(params) {                        
+                        var toolTiphtml = ''
+						if (isNaN(params.value)){
+                        toolTiphtml = params.name + '造船产值: 0 亿元'
+						}else{
+						toolTiphtml = params.name + '造船产值: ' + params.value + '亿元'
+						}
+                        //console.log(toolTiphtml)                        
+                        return toolTiphtml;                   
+                }
+            },
+            toolbox: {
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            visualMap: {
+                show: true,
+                left: 'left',
+                top: 'bottom',
+                seriesIndex: [0],
+                type:'piecewise',
+                pieces:[
+                    { min: 15, color: '#FF4C6A' },   // 高产值深粉色
+    { min: 7.5, max: 14.9, color: '#FFB6C1' }, // 中高浅粉色
+    { min: 2.5, max: 7.4, color: '#FFD700' },  // 中等暖黄色
+    { min: 0.1, max: 2.4, color: '#B0E0E6' },  // 低产淡青色
+                    {min:0, max:0, color: '#D3D3D3'},
+                ],            
+                textStyle: {
+                    color: '#000000'
+                }
+            },            
+            geo: {
+                show: true,
+                map: mapName,
+                label: {
+                    normal: {
+                        show: true,
+                        fontSize:12,
+                    },
+                    emphasis: {
+                        show: false,
+                    }
+                },
+                roam: false,
+                itemStyle: {
+                    normal: {
+                        areaColor: '#FFFFFF',
+                        borderColor: '#666666',
+                    },
+                    emphasis: {
+                        areaColor: '#0099CC',
+                    }
+                }
+            },
+            series: [
+                {
+                    type: 'map',
+                    map: mapName,
+                    geoIndex: 0,           
+                    animation: false,
+                    data: mapdata
+                },
+            ]
+};
+mapChart.setOption(mapOption);
+    // --------------------------- 省级环形图部分 ---------------------------
+    var provincialDom = document.getElementById('provincialPie');
+    var provincialChart = echarts.init(provincialDom, null, { renderer: 'canvas' });
+
+    var provincialData = [
+      { name: '江苏', value: 41.4 },
+      { name: '上海', value: 15.3 },
+      { name: '浙江', value: 11.8 },
+      { name: '广东', value: 9.2 },
+      { name: '辽宁', value: 9 },
+      { name: '山东', value: 6.1 },
+      { name: '湖北', value: 1.1 },
+      { name: '福建', value: 2.8 },
+      { name: '北京', value: 0.1 },
+      { name: '安徽', value: 1.5 },
+      { name: '江西', value: 0.2 },
+      { name: '重庆', value: 0.4 },
+      { name: '广西', value: 0.6 }
+    ];
+
+    var provincialOption = {
+      title: {
+        text: '各省船舶产值分布',
+        left: 'right',
+        top: '13%',
+        textStyle: { fontSize: 24 }
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c}亿元 ({d}%)'
+      },
+      legend: {
+        type: 'scroll',
+        orient: 'vertical',
+        left: 'left',
+        top: '20%',
+        textStyle: { fontSize: 10 }
+      },
+      series: [
+        {
+          name: '产值分布',
+          type: 'pie',
+          radius: ['40%', '70%'],
+          center: ['100%', '40%'],
+          startAngle: 91, // 从270度开始
+          endAngle: 270,    // 到90度（逆时针，缺口向右）
+          clockwise: false, // 逆时针方向
+          data: provincialData,
+          label: {
+            show: true,
+            position: 'outside',
+            formatter: '{b}: {d}%'
+          },
+          labelLine: {
+            show: true,
+            length: 10,
+            length2: 15
+          },
+          itemStyle: {
+            borderRadius: 8,
+            borderColor: '#fff',
+            borderWidth: 2
+          }
+        }
+      ]
+    };
+
+    provincialChart.setOption(provincialOption);
+
+    // --------------------------- 嵌套环形图部分 ---------------------------
+    var dom = document.getElementById('nestedPie');
+    var myChart = echarts.init(dom, null, { renderer: 'canvas' });
+    var app = {};
+
+    // 三层数据
+    var dataLayer1 = [
+      { value: 51, name: '中国' },
+      { value: 28, name: '韩国' },
+      { value: 15.6, name: '日本' },
+      { value: 5.4, name: '其他国家' }
+    ]; // 最外层数据
+    var dataLayer2 = [
+      { value: 64.5, name: '中国' },
+      { value: 19, name: '韩国' },
+      { value: 12.3, name: '日本' },
+      { value: 4.2, name: '其他国家' }
+    ]; // 中间层数据
+    var dataLayer3 = [
+      { value: 51, name: '中国' },
+      { value: 28, name: '韩国' },
+      { value: 15.6, name: '日本' },
+      { value: 5.4, name: '其他国家' }
+    ]; // 最内层数据
+
+    var option = {
+        title: {
+            text: '三大造船指标',
+            left: 'left',
+            top: '13%',
+            textStyle: { fontSize: 24 }
+        },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)'
+      },
+      legend: {
+        type: 'scroll',
+        orient: 'vertical',
+        left: 'right',
+        bottom: '70%',
+        textStyle: { fontSize: 12 }
+      },
+      series: [
+        {
+          name: '全球手持订单占比',
+          type: 'pie',
+          radius: ['60%', '80%'],
+          center: ['1%', '40%'],
+          startAngle: 90,
+          endAngle: 270,
+          data: dataLayer1,
+          label: {
+            show: true,
+            position: 'outside',
+            formatter: '{b}: {d}%',
+            fontSize: 15
+          },
+          labelLine: { length: 8, length2: 16 }
+        },
+        {
+          name: '全球新接订单类型',
+          type: 'pie',
+          radius: ['40%', '60%'],
+          center: ['1%', '40%'],
+          startAngle: 90,
+          endAngle: 270,
+          data: dataLayer2,
+          label: {
+            show: true,
+            position: 'outside',
+            formatter: '{b}: {d}%',
+            fontSize: 14
+          },
+          labelLine: { length: 6, length2: 12 }
+        },
+        {
+          name: '全球造船完工量份额',
+          type: 'pie',
+          radius: ['20%', '40%'],
+          center: ['1%', '40%'],
+          startAngle: 90,
+          endAngle: 270,
+          data: dataLayer3,
+          label: {
+            show: true,
+            position: 'outside',
+            formatter: '{b}: {d}%',
+            fontSize: 13
+          },
+          labelLine: { length: 4, length2: 8 }
+        }
+      ]
+    };
+
+    myChart.setOption(option);
+
+    // 统一调整图表大小
+    window.addEventListener('resize', function() {
+      provincialChart.resize();
+      myChart.resize();
+    });
+  </script>
+</body>
+</html>
